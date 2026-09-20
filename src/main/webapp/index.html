@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ANUJA MART</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f8f3ff 0%, #ede4fb 100%);
+            color: #29204d;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .hero-card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(108, 63, 197, 0.12);
+            max-width: 580px;
+            width: 100%;
+        }
+        .logo-icon {
+            width: 65px;
+            height: 65px;
+            background: #6c3fc5;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            margin: 0 auto 20px;
+            box-shadow: 0 6px 15px rgba(108, 63, 197, 0.3);
+        }
+        h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+            color: #222;
+        }
+        h1 span {
+            color: #6c3fc5;
+        }
+        p {
+            font-size: 16px;
+            color: #6d6380;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: #6c3fc5;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5831a3;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #f1e9fc;
+            color: #6c3fc5;
+        }
+        .btn-secondary:hover {
+            background: #e5d7f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-card">
+        <div class="logo-icon">🛍</div>
+        <h1>WELCOME TO <span>ANUJA</span> MART</h1>
+        <p>Your premier online marketplace for electronics, fashion, beauty essentials, grocery, and home appliances.</p>
+
+        <div class="actions">
+            <a href="products" class="btn btn-primary">Browse Store Now →</a>
+            <a href="login.html" class="btn btn-secondary">Login to Account</a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ANUJA MART - Login</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f8f3ff;
+            color: #29204d;
+        }
+
+        .navbar {
+            height: 80px;
+            background: #eee5ff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+            border-bottom: 1px solid #e3d5f8;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: #7d3fc1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: #222;
+        }
+
+        .logo h1 span {
+            color: #7d3fc1;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            color: #4d4166;
+            font-size: 15px;
+        }
+
+        .main {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 7%;
+        }
+
+        .content {
+            width: 1100px;
+            display: flex;
+            align-items: center;
+            gap: 70px;
+        }
+
+        .left {
+            width: 50%;
+        }
+
+        .left h2 {
+            font-size: 48px;
+            line-height: 1.1;
+            margin-bottom: 18px;
+        }
+
+        .purple {
+            color: #7d3fc1;
+        }
+
+        .left p {
+            font-size: 19px;
+            color: #6d6380;
+            margin-bottom: 35px;
+        }
+
+        .features {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #eadbff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            margin: auto;
+        }
+
+        .feature span {
+            display: block;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #55496b;
+        }
+
+        .shopping {
+            width: 330px;
+            height: 180px;
+            background: #eadbff;
+            border-radius: 50%;
+            position: relative;
+            margin-top: 25px;
+        }
+
+        .bag {
+            position: absolute;
+            width: 85px;
+            height: 100px;
+            background: #7d3fc1;
+            border-radius: 8px;
+            left: 120px;
+            top: 35px;
+        }
+
+        .bag::before {
+            content: "";
+            position: absolute;
+            width: 38px;
+            height: 25px;
+            border: 5px solid #7d3fc1;
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            left: 18px;
+            top: -25px;
+        }
+
+        .card {
+            width: 440px;
+            background: white;
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 10px 35px rgba(83, 46, 120, 0.12);
+        }
+
+        .card h2 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .card h2 span {
+            color: #7d3fc1;
+        }
+
+        .subtitle {
+            color: #777080;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #403653;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd4e8;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #8b4dcc;
+        }
+
+        .forgot {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+
+        .forgot a {
+            color: #7d3fc1;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 9px;
+            background: #7d3fc1;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-btn:hover {
+            background: #692fa9;
+        }
+
+        .or {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 25px 0;
+            color: #999;
+        }
+
+        .or div {
+            height: 1px;
+            background: #ddd;
+            flex: 1;
+        }
+
+        .register {
+            text-align: center;
+            color: #777080;
+        }
+
+        .register a {
+            color: #7d3fc1;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        @media(max-width: 800px) {
+            .content {
+                flex-direction: column;
+            }
+
+            .left {
+                width: 100%;
+                text-align: center;
+            }
+
+            .card {
+                width: 100%;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            <div class="logo-icon">🛍</div>
+
+            <div>
+                <h1><span>ANUJA</span> MART</h1>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <span>Search</span>
+            <span>Account</span>
+            <span>Cart 🛒</span>
+        </div>
+
+    </nav>
+
+    <main class="main">
+
+        <div class="content">
+
+            <div class="left">
+
+                <h2>
+                    Welcome to<br>
+                    <span class="purple">ANUJA MART</span>
+                </h2>
+
+                <p>
+                    Your one-stop shop for everything you need!
+                </p>
+
+                <div class="features">
+
+                    <div class="feature">
+                        <div class="feature-icon">🚚</div>
+                        <span>Fast<br>Delivery</span>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">🛡</div>
+                        <span>Safe &<br>Secure</span>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">🏷</div>
+                        <span>Best<br>Prices</span>
+                    </div>
+
+                    <div class="feature">
+                        <div class="feature-icon">❤</div>
+                        <span>Wide<br>Range</span>
+                    </div>
+
+                </div>
+
+                <div class="shopping">
+                    <div class="bag"></div>
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <h2>Login to <span>ANUJA MART</span></h2>
+
+                <p class="subtitle">
+                    Enter your details to continue shopping
+                </p>
+
+                <div id="alertBox" style="display:none; padding:12px; border-radius:8px; margin-bottom:18px; font-size:14px;"></div>
+
+                <form action="login" method="post">
+
+                    <div class="input-group">
+                        <label>Email</label>
+
+                        <input
+                            id="emailInput"
+                            type="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+
+                        <input
+                            id="passwordInput"
+                            type="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required>
+                    </div>
+
+                    <button class="login-btn" type="submit">
+                        Login →
+                    </button>
+
+                </form>
+
+                <div class="or">
+                    <div></div>
+                    DEMO ACCOUNTS
+                    <div></div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                    <button type="button" onclick="fillCreds('buyer@anujamart.com','buyer123')" style="flex:1; padding:8px 4px; font-size:12px; border:1px solid #7d3fc1; background:#f4ebff; color:#7d3fc1; border-radius:6px; cursor:pointer; font-weight:600;">Buyer</button>
+                    <button type="button" onclick="fillCreds('seller@anujamart.com','seller123')" style="flex:1; padding:8px 4px; font-size:12px; border:1px solid #7d3fc1; background:#f4ebff; color:#7d3fc1; border-radius:6px; cursor:pointer; font-weight:600;">Seller</button>
+                    <button type="button" onclick="fillCreds('admin@anujamart.com','admin123')" style="flex:1; padding:8px 4px; font-size:12px; border:1px solid #7d3fc1; background:#f4ebff; color:#7d3fc1; border-radius:6px; cursor:pointer; font-weight:600;">Admin</button>
+                </div>
+
+                <div class="register">
+                    Don't have an account?
+                    <a href="register.html">Register</a>
+                </div>
+
+                <script>
+                    function fillCreds(email, pass) {
+                        document.getElementById('emailInput').value = email;
+                        document.getElementById('passwordInput').value = pass;
+                    }
+
+                    const params = new URLSearchParams(window.location.search);
+                    const alertBox = document.getElementById('alertBox');
+                    if (params.get('registered') === 'true') {
+                        alertBox.style.display = 'block';
+                        alertBox.style.background = '#d4edda';
+                        alertBox.style.color = '#155724';
+                        alertBox.textContent = '✓ Registration successful! Please login with your credentials.';
+                    } else if (params.get('logout') === 'true') {
+                        alertBox.style.display = 'block';
+                        alertBox.style.background = '#e2e3e5';
+                        alertBox.style.color = '#383d41';
+                        alertBox.textContent = '✓ You have logged out successfully.';
+                    } else if (params.get('error')) {
+                        alertBox.style.display = 'block';
+                        alertBox.style.background = '#f8d7da';
+                        alertBox.style.color = '#721c24';
+                        const err = params.get('error');
+                        alertBox.textContent = err === 'invalid' ? '✗ Invalid email or password.' : decodeURIComponent(err);
+                    }
+                </script>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ANUJA MART - Register</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f8f3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            width: 450px;
+            background: white;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(83, 46, 120, 0.12);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 span {
+            color: #7d3fc1;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777080;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #403653;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd4e8;
+            border-radius: 9px;
+            font-size: 15px;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 9px;
+            background: #7d3fc1;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login {
+            text-align: center;
+            margin-top: 20px;
+            color: #777080;
+        }
+
+        .login a {
+            color: #7d3fc1;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <h1><span>ANUJA</span> MART</h1>
+
+        <p class="subtitle">Create your account</p>
+
+        <div id="alertBox" style="display:none; padding:12px; border-radius:8px; margin-bottom:18px; font-size:14px; background:#f8d7da; color:#721c24;"></div>
+
+        <form action="register" method="post">
+
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="Enter your name" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Enter your email" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password (min 4 chars)" required>
+            </div>
+
+            <div class="input-group">
+                <label>Account Type</label>
+
+                <select name="role" required>
+                    <option value="">Select Account Type</option>
+                    <option value="BUYER">Buyer</option>
+                    <option value="SELLER">Seller</option>
+                </select>
+
+            </div>
+
+            <button class="register-btn" type="submit">
+                Register
+            </button>
+
+        </form>
+
+        <div class="login">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </div>
+
+        <script>
+            const params = new URLSearchParams(window.location.search);
+            const alertBox = document.getElementById('alertBox');
+            if (params.get('error')) {
+                alertBox.style.display = 'block';
+                alertBox.textContent = '✗ ' + decodeURIComponent(params.get('error'));
+            }
+        </script>
+
+    </div>
+
+</body>
+</html>

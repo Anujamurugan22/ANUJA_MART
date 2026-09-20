@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ANUJA MART - Add Product</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f5f0ff;
+        }
+
+        .header {
+            background: #6c3fc5;
+            color: white;
+            padding: 20px 40px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 500px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px #ddd;
+        }
+
+        h1 {
+            text-align: center;
+            color: #6c3fc5;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #6c3fc5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #6c3fc5;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    ANUJA MART
+</div>
+
+<div class="container">
+
+    <h1>Add Product</h1>
+
+    <div id="alertBox" style="display:none; padding:12px; border-radius:8px; margin-bottom:18px; font-size:14px; background:#f8d7da; color:#721c24;"></div>
+
+    <form action="add-product" method="post">
+
+        <label>Product Name</label>
+        <input type="text" name="name" required>
+
+        <label>Category</label>
+        <select name="category" required>
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Beauty">Beauty</option>
+            <option value="Grocery">Grocery</option>
+            <option value="Home">Home</option>
+        </select>
+
+        <label>Price (₹)</label>
+        <input type="number" name="price" step="0.01" placeholder="e.g. 999.00" required>
+
+        <label>Quantity</label>
+        <input type="number" name="quantity" placeholder="e.g. 25" required>
+
+        <label>Image URL (Optional)</label>
+        <input type="url" name="imageUrl" placeholder="https://example.com/image.jpg">
+
+        <label>Description</label>
+        <textarea name="description" rows="4" placeholder="Enter detailed product description" required></textarea>
+
+        <button type="submit">Add Product</button>
+
+    </form>
+
+    <a class="back" href="seller.html">← Back to Seller Dashboard</a>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const alertBox = document.getElementById('alertBox');
+        if (params.get('error')) {
+            alertBox.style.display = 'block';
+            alertBox.textContent = '✗ ' + decodeURIComponent(params.get('error'));
+        }
+    </script>
+
+</div>
+
+</body>
+</html>

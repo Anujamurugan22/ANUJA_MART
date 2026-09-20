@@ -1,0 +1,54 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    seller_id INT,
+    name VARCHAR(150) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    buyer_id INT NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(30) DEFAULT 'PENDING',
+    shipping_address TEXT,
+    payment_method VARCHAR(50) DEFAULT 'MOCK_PAYMENT',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    product_name VARCHAR(150) NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    seller_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
