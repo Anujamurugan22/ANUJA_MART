@@ -2,7 +2,7 @@ ANUJA MART
 
 Online Shopping Web Application
 
-ANUJA MART is  Java-based online shopping web application that allows buyers to browse and purchase products from multiple sellers.
+ANUJA MART is  Java-based online shopping web application that allows buyers to browse and purchase products from multiple sellers
 
 Features
 
