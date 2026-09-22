@@ -82,4 +82,4 @@ ANUJA_MART
 
 Purpose
 
-The main purpose of ANUJA MART is to provide a simple and user-friendly online shopping platform with separate functionalities for buyers, sellers and administrators.
+The main purpose of ANUJA MART is to provide a simple and user-friendly online shopping platform with separate functionalities for buyers, sellers and administrators
