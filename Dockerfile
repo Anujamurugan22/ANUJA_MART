@@ -18,6 +18,6 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY --from=build /app/target/ANUJA_MART.war /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
-ENV PORT=8080
 
-CMD ["catalina.sh", "run"]
+# Configure concrete port dynamically at container startup with 8080 fallback
+CMD ["sh", "-c", "sed -i \"s/port=\\\"8080\\\"/port=\\\"${PORT:-8080}\\\"/g\" /usr/local/tomcat/conf/server.xml && catalina.sh run"]
