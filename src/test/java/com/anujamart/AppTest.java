@@ -160,4 +160,57 @@ public class AppTest {
         List<CartItem> emptyCart = cartService.getCart(buyer.getId());
         assertTrue(emptyCart.isEmpty());
     }
+
+    @Test
+    public void test100ProductCatalogVerification() throws Exception {
+        // 1. Verify Catalog Array Structure
+        assertEquals(100, com.anujamart.util.ProductCatalogSeed.CATALOG.length, "Catalog must contain exactly 100 products");
+
+        java.util.Map<String, Integer> categoryCounts = new java.util.HashMap<>();
+        java.util.Set<String> uniqueNames = new java.util.HashSet<>();
+
+        for (Object[] p : com.anujamart.util.ProductCatalogSeed.CATALOG) {
+            String name = (String) p[0];
+            String category = (String) p[1];
+            double price = (Double) p[2];
+            int quantity = (Integer) p[3];
+            String desc = (String) p[4];
+            String imageUrl = (String) p[5];
+
+            assertTrue(uniqueNames.add(name), "Product name must be unique: " + name);
+            assertTrue(price > 0, "Price must be positive for: " + name);
+            assertTrue(quantity > 0, "Quantity must be positive for: " + name);
+            assertNotNull(desc, "Description required for: " + name);
+            assertFalse(desc.trim().isEmpty(), "Description non-empty for: " + name);
+            assertTrue(imageUrl.startsWith("https://") || imageUrl.startsWith("http://"), "Image URL must be valid HTTP(S) for: " + name);
+
+            categoryCounts.put(category, categoryCounts.getOrDefault(category, 0) + 1);
+        }
+
+        assertEquals(20, categoryCounts.get("Electronics"), "Electronics should have 20 products");
+        assertEquals(20, categoryCounts.get("Fashion and Clothing"), "Fashion and Clothing should have 20 products");
+        assertEquals(15, categoryCounts.get("Beauty and Personal Care"), "Beauty and Personal Care should have 15 products");
+        assertEquals(15, categoryCounts.get("Home and Kitchen"), "Home and Kitchen should have 15 products");
+        assertEquals(15, categoryCounts.get("Books and Stationery"), "Books and Stationery should have 15 products");
+        assertEquals(15, categoryCounts.get("Watches and Accessories"), "Watches and Accessories should have 15 products");
+
+        // 2. Verify Database Product Service and Categories
+        ProductService productService = new ProductService();
+        List<Product> allProducts = productService.getAllProducts();
+        assertTrue(allProducts.size() >= 100, "Database should contain at least 100 products");
+
+        List<String> categories = productService.getAllCategories();
+        assertTrue(categories.contains("Electronics"));
+        assertTrue(categories.contains("Fashion and Clothing"));
+        assertTrue(categories.contains("Beauty and Personal Care"));
+        assertTrue(categories.contains("Home and Kitchen"));
+        assertTrue(categories.contains("Books and Stationery"));
+        assertTrue(categories.contains("Watches and Accessories"));
+
+        // 3. Verify Category Filtering
+        for (String cat : categories) {
+            List<Product> catProducts = productService.searchAndFilter(null, cat);
+            assertFalse(catProducts.isEmpty(), "Category " + cat + " should have products");
+        }
+    }
 }

@@ -448,7 +448,7 @@
                 <div class="product-grid">
                     <c:forEach var="p" items="${products}">
                         <div class="product-card" id="prod-${p.id}">
-                            <img src="${p.imageUrl}" alt="<c:out value='${p.name}'/>" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';">
+                            <img src="${not empty p.imageUrl ? p.imageUrl : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500'}" alt="<c:out value='${p.name}'/>" class="product-img" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';">
                             <div class="product-info">
                                 <div class="product-category"><c:out value="${p.category}"/></div>
                                 <div class="product-name"><c:out value="${p.name}"/></div>
