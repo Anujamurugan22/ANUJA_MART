@@ -50,6 +50,12 @@ public class ProductListServlet extends HttpServlet {
                 } catch (Exception e) {
                     // Ignore cart count failure
                 }
+                try {
+                    com.anujamart.service.OrderService orderService = new com.anujamart.service.OrderService();
+                    java.util.Set<Integer> purchasedProductIds = orderService.getPurchasedProductIds(userId);
+                    request.setAttribute("purchasedProductIds", purchasedProductIds);
+                } catch (Exception ignored) {
+                }
             }
         }
 

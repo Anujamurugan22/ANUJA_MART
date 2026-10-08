@@ -381,6 +381,9 @@
     <div class="container">
 
         <!-- Alerts -->
+        <c:if test="${param.message eq 'review_success' or param.message eq 'review_added'}">
+            <div class="alert alert-success">✓ Review submitted successfully.</div>
+        </c:if>
         <c:if test="${param.message eq 'product_added'}">
             <div class="alert alert-success">✓ Product has been added successfully!</div>
         </c:if>
@@ -444,12 +447,28 @@
             <c:otherwise>
                 <div class="product-grid">
                     <c:forEach var="p" items="${products}">
-                        <div class="product-card">
+                        <div class="product-card" id="prod-${p.id}">
                             <img src="${p.imageUrl}" alt="<c:out value='${p.name}'/>" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500';">
                             <div class="product-info">
                                 <div class="product-category"><c:out value="${p.category}"/></div>
                                 <div class="product-name"><c:out value="${p.name}"/></div>
                                 <div class="product-desc"><c:out value="${p.description}"/></div>
+
+                                <!-- Reviews Action -->
+                                <div style="margin-bottom: 12px;">
+                                    <button type="button" onclick="openReviewModal(${p.id}, '<c:out value="${p.name}"/>')" style="background:none; border:none; color:#6c3fc5; cursor:pointer; font-size:13px; font-weight:600; padding:0; display:flex; align-items:center; gap:5px;">
+                                        <c:choose>
+                                            <c:when test="${p.reviewCount > 0}">
+                                                <span style="color:#f39c12; font-size:14px;">★</span>
+                                                <span style="font-weight:700; color:#333;">${p.avgRating}/5</span>
+                                                <span style="color:#777; font-size:12px;">(${p.reviewCount} ${p.reviewCount == 1 ? 'review' : 'reviews'})</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="color:#777; font-size:12px;">⭐ View Reviews & Rating</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </button>
+                                </div>
 
                                 <div class="product-bottom">
                                     <div>
@@ -502,5 +521,233 @@
 
     </div>
 
+    <!-- Review Modal Dialog -->
+    <div id="reviewModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:16px; width:90%; max-width:550px; max-height:85vh; overflow-y:auto; padding:25px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
+            <button onclick="closeReviewModal()" style="position:absolute; right:18px; top:15px; border:none; background:none; font-size:22px; cursor:pointer; color:#777;">✕</button>
+            <h3 id="modalProductTitle" style="color:#2e1e4a; margin-bottom:10px; font-size:19px;">Product Reviews</h3>
+            <div id="modalSummary" style="font-size:14px; color:#6c3fc5; font-weight:600; margin-bottom:15px;">Loading reviews...</div>
+
+            <!-- Existing Reviews List -->
+            <div id="reviewsList" style="max-height:220px; overflow-y:auto; margin-bottom:20px; border:1px solid #f0eaf7; border-radius:8px; padding:12px; background:#faf7fd;"></div>
+
+            <!-- Submit Review Form Section -->
+            <div id="reviewFormSection" style="border-top:1px solid #eee; padding-top:15px;">
+                <div id="reviewFormContainer" style="display:none;">
+                    <h4 style="margin-bottom:10px; color:#333;" id="reviewFormTitle">Write a Customer Review</h4>
+                    <form action="${pageContext.request.contextPath}/reviews" method="post" id="reviewForm">
+                        <input type="hidden" name="productId" id="reviewProductId">
+                        <input type="hidden" name="source" value="products">
+                        <div style="margin-bottom:10px;">
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">Rating (1 to 5 Stars) *</label>
+                            <select name="rating" id="reviewRatingSelect" required style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
+                                <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                                <option value="3">⭐⭐⭐ (3 - Good)</option>
+                                <option value="2">⭐⭐ (2 - Fair)</option>
+                                <option value="1">⭐ (1 - Poor)</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:4px;">Your Comments *</label>
+                            <textarea name="comment" id="reviewCommentText" rows="3" required placeholder="Share your experience with this item..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box;"></textarea>
+                        </div>
+                        <button type="submit" id="reviewSubmitBtn" style="width:100%; background:#6c3fc5; color:white; padding:10px; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Submit Review</button>
+                    </form>
+                </div>
+                <div id="reviewNotice" style="display:none; padding:12px; border-radius:8px; background:#fbf9fe; border:1px solid #ede4fb; font-size:13px; color:#55496b; text-align:center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chatbot Floating Widget -->
+    <div id="aiChatWidget" style="position:fixed; bottom:25px; right:25px; z-index:9998; font-family:'Segoe UI', Arial, sans-serif;">
+        <!-- Launcher Button -->
+        <button id="aiLauncherBtn" onclick="toggleAiChat()" style="background:#6c3fc5; color:white; border:none; border-radius:50px; padding:14px 22px; font-size:15px; font-weight:600; cursor:pointer; box-shadow:0 6px 20px rgba(108,63,197,0.35); display:flex; align-items:center; gap:8px;">
+            <span>🤖</span> AI Assistant
+        </button>
+
+        <!-- Chat Window -->
+        <div id="aiChatWindow" style="display:none; width:360px; height:480px; background:white; border-radius:18px; box-shadow:0 10px 40px rgba(0,0,0,0.2); overflow:hidden; flex-direction:column; border:1px solid #e5d8f6;">
+            <!-- Header -->
+            <div style="background:#6c3fc5; color:white; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🤖</span>
+                    <div>
+                        <div style="font-weight:700; font-size:14px;">ANUJA AI Assistant</div>
+                        <div style="font-size:11px; opacity:0.85;">● Online 24/7</div>
+                    </div>
+                </div>
+                <button onclick="toggleAiChat()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <!-- Messages Log -->
+            <div id="aiMessages" style="flex:1; padding:15px; overflow-y:auto; font-size:13px; background:#fbf9fe; display:flex; flex-direction:column; gap:10px;">
+                <div style="background:#f0eaf7; color:#2e1e4a; padding:10px 14px; border-radius:12px; align-self:flex-start; max-width:85%;">
+                    👋 Hello! I am your <strong>ANUJA MART AI Assistant</strong>. How can I assist you with your shopping today?
+                </div>
+            </div>
+
+            <!-- Suggested Quick Prompts -->
+            <div style="padding:6px 12px; background:#fff; border-top:1px solid #f2eefa; display:flex; gap:6px; overflow-x:auto;">
+                <button onclick="sendQuickPrompt('What are your top categories?')" style="background:#f0eaf7; border:1px solid #6c3fc5; color:#6c3fc5; padding:4px 8px; border-radius:12px; font-size:11px; cursor:pointer; white-space:nowrap;">🏷️ Categories</button>
+                <button onclick="sendQuickPrompt('How do I track my order?')" style="background:#f0eaf7; border:1px solid #6c3fc5; color:#6c3fc5; padding:4px 8px; border-radius:12px; font-size:11px; cursor:pointer; white-space:nowrap;">📦 Track Order</button>
+                <button onclick="sendQuickPrompt('How can I sell on ANUJA MART?')" style="background:#f0eaf7; border:1px solid #6c3fc5; color:#6c3fc5; padding:4px 8px; border-radius:12px; font-size:11px; cursor:pointer; white-space:nowrap;">💼 Sell</button>
+            </div>
+
+            <!-- Input Bar -->
+            <div style="padding:10px 12px; background:white; border-top:1px solid #eee; display:flex; gap:8px;">
+                <input type="text" id="aiInput" placeholder="Ask about products, orders..." onkeypress="handleAiKeyPress(event)" style="flex:1; padding:9px 12px; border:1px solid #ddd; border-radius:20px; font-size:13px; outline:none;">
+                <button onclick="sendAiMessage()" style="background:#6c3fc5; color:white; border:none; border-radius:50%; width:36px; height:36px; cursor:pointer; display:flex; align-items:center; justify-content:center;">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Review Modal Logic
+        function openReviewModal(productId, productName) {
+            document.getElementById('modalProductTitle').textContent = 'Reviews: ' + productName;
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('reviewModal').style.display = 'flex';
+            document.getElementById('modalSummary').textContent = 'Loading reviews...';
+            document.getElementById('reviewsList').innerHTML = '';
+            document.getElementById('reviewFormContainer').style.display = 'none';
+            document.getElementById('reviewNotice').style.display = 'none';
+
+            fetch('${pageContext.request.contextPath}/reviews?productId=' + productId)
+                .then(r => r.json())
+                .then(data => {
+                    const avg = data.avgRating || 0;
+                    const count = data.count || 0;
+                    document.getElementById('modalSummary').innerHTML = 'Average Rating: <strong>⭐ ' + avg + ' / 5.0</strong> (' + count + ' reviews)';
+
+                    if (!data.reviews || data.reviews.length === 0) {
+                        document.getElementById('reviewsList').innerHTML = '<div style="color:#777; text-align:center; padding:15px; font-size:13px;">No reviews yet. Be the first to review this product!</div>';
+                    } else {
+                        let html = '';
+                        data.reviews.forEach(rev => {
+                            let stars = '⭐'.repeat(rev.rating);
+                            html += '<div style="border-bottom:1px solid #eedefc; padding:8px 0; font-size:13px;">' +
+                                    '<div><strong>' + escapeHtml(rev.buyerName) + '</strong> <span style="color:#f39c12; margin-left:6px;">' + stars + '</span></div>' +
+                                    '<div style="color:#555; margin-top:3px;">' + escapeHtml(rev.comment) + '</div>' +
+                                    '</div>';
+                        });
+                        document.getElementById('reviewsList').innerHTML = html;
+                    }
+
+                    // Check eligibility to review
+                    const formContainer = document.getElementById('reviewFormContainer');
+                    const notice = document.getElementById('reviewNotice');
+                    if (data.canReview) {
+                        formContainer.style.display = 'block';
+                        notice.style.display = 'none';
+                        if (data.userReview) {
+                            document.getElementById('reviewFormTitle').textContent = 'Update Your Review';
+                            document.getElementById('reviewRatingSelect').value = data.userReview.rating;
+                            document.getElementById('reviewCommentText').value = data.userReview.comment;
+                            document.getElementById('reviewSubmitBtn').textContent = 'Update Review';
+                        } else {
+                            document.getElementById('reviewFormTitle').textContent = 'Write a Customer Review';
+                            document.getElementById('reviewRatingSelect').value = '5';
+                            document.getElementById('reviewCommentText').value = '';
+                            document.getElementById('reviewSubmitBtn').textContent = 'Submit Review';
+                        }
+                    } else if (!data.isLoggedIn) {
+                        formContainer.style.display = 'none';
+                        notice.style.display = 'block';
+                        notice.innerHTML = '💡 Please <a href="${pageContext.request.contextPath}/login.html" style="color:#6c3fc5; font-weight:600;">login as a buyer</a> who purchased this product to leave a review.';
+                    } else {
+                        formContainer.style.display = 'none';
+                        notice.style.display = 'block';
+                        notice.innerHTML = '🔒 Only verified customers who have purchased this product can leave a rating and review.';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('modalSummary').textContent = 'Reviews & Ratings';
+                    document.getElementById('reviewsList').innerHTML = '<div style="color:#777; padding:10px;">Unable to load reviews right now.</div>';
+                });
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // AI Chatbot Logic
+        function toggleAiChat() {
+            const win = document.getElementById('aiChatWindow');
+            const btn = document.getElementById('aiLauncherBtn');
+            if (win.style.display === 'none' || win.style.display === '') {
+                win.style.display = 'flex';
+                btn.style.display = 'none';
+                document.getElementById('aiInput').focus();
+            } else {
+                win.style.display = 'none';
+                btn.style.display = 'flex';
+            }
+        }
+
+        function handleAiKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendAiMessage();
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById('aiInput').value = promptText;
+            sendAiMessage();
+        }
+
+        function sendAiMessage() {
+            const input = document.getElementById('aiInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messagesDiv = document.getElementById('aiMessages');
+
+            // Render User Bubble
+            const userBubble = document.createElement('div');
+            userBubble.style.cssText = 'background:#6c3fc5; color:white; padding:9px 13px; border-radius:12px; align-self:flex-end; max-width:85%; word-break:break-word;';
+            userBubble.textContent = text;
+            messagesDiv.appendChild(userBubble);
+
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Render Typing Placeholder
+            const typingBubble = document.createElement('div');
+            typingBubble.style.cssText = 'background:#f0eaf7; color:#777; padding:8px 12px; border-radius:12px; align-self:flex-start; font-style:italic;';
+            typingBubble.textContent = 'Thinking...';
+            messagesDiv.appendChild(typingBubble);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            fetch('${pageContext.request.contextPath}/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: 'message=' + encodeURIComponent(text)
+            })
+            .then(res => res.json())
+            .then(data => {
+                typingBubble.remove();
+                const botBubble = document.createElement('div');
+                botBubble.style.cssText = 'background:#f0eaf7; color:#2e1e4a; padding:10px 14px; border-radius:12px; align-self:flex-start; max-width:85%; white-space:pre-wrap; line-height:1.4;';
+                botBubble.textContent = data.reply || 'I am here to assist with any questions about ANUJA MART!';
+                messagesDiv.appendChild(botBubble);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            })
+            .catch(err => {
+                typingBubble.remove();
+                const errBubble = document.createElement('div');
+                errBubble.style.cssText = 'background:#f0eaf7; color:#2e1e4a; padding:10px 14px; border-radius:12px; align-self:flex-start; max-width:85%;';
+                errBubble.textContent = 'I am currently operating in store assistance mode. You can search products, track orders, or explore categories!';
+                messagesDiv.appendChild(errBubble);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+    </script>
 </body>
 </html>
