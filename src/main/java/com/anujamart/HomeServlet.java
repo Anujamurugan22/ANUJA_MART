@@ -1,6 +1,4 @@
 package com.anujamart;
-public class HomeServlet {
-    
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

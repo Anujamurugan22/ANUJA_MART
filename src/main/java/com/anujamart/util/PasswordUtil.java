@@ -16,9 +16,12 @@ public class PasswordUtil {
             return false;
         }
         try {
-            return BCrypt.checkpw(plainPassword, hashedPassword);
+            if (hashedPassword.startsWith("$2a$") || hashedPassword.startsWith("$2b$") || hashedPassword.startsWith("$2y$")) {
+                return BCrypt.checkpw(plainPassword, hashedPassword);
+            }
+            return plainPassword.equals(hashedPassword);
         } catch (Exception e) {
-            return false;
+            return plainPassword.equals(hashedPassword);
         }
     }
 }
