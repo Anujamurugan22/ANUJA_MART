@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.env
+*.log
+.vscode/
+.idea/
+backup_*.sql
+deploy_to_tomcat.bat
+do_deploy.bat
