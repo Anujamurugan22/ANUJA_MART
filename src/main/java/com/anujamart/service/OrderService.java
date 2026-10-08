@@ -102,4 +102,12 @@ public class OrderService {
     public boolean updateOrderStatus(int orderId, String status) throws SQLException {
         return orderDAO.updateStatus(orderId, status);
     }
+
+    public boolean hasBuyerPurchasedProduct(int buyerId, int productId) throws SQLException {
+        return orderDAO.hasBuyerPurchasedProduct(buyerId, productId);
+    }
+
+    public java.util.Set<Integer> getPurchasedProductIds(int buyerId) throws SQLException {
+        return orderDAO.getPurchasedProductIds(buyerId);
+    }
 }

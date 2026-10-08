@@ -14,7 +14,11 @@ import java.util.List;
 public class ProductDAO {
 
     public Product findById(int id) throws SQLException {
-        String sql = "SELECT id, seller_id, name, category, price, quantity, description, image_url, created_at FROM products WHERE id = ?";
+        String sql = "SELECT p.id, p.seller_id, p.name, p.category, p.price, p.quantity, p.description, p.image_url, p.created_at, " +
+                     "COALESCE(r.avg_rating, 0.0) AS avg_rating, COALESCE(r.rev_count, 0) AS review_count " +
+                     "FROM products p " +
+                     "LEFT JOIN (SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS rev_count FROM reviews GROUP BY product_id) r ON p.id = r.product_id " +
+                     "WHERE p.id = ?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -29,7 +33,11 @@ public class ProductDAO {
 
     public List<Product> findAll() throws SQLException {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT id, seller_id, name, category, price, quantity, description, image_url, created_at FROM products ORDER BY id DESC";
+        String sql = "SELECT p.id, p.seller_id, p.name, p.category, p.price, p.quantity, p.description, p.image_url, p.created_at, " +
+                     "COALESCE(r.avg_rating, 0.0) AS avg_rating, COALESCE(r.rev_count, 0) AS review_count " +
+                     "FROM products p " +
+                     "LEFT JOIN (SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS rev_count FROM reviews GROUP BY product_id) r ON p.id = r.product_id " +
+                     "ORDER BY p.id DESC";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -42,7 +50,11 @@ public class ProductDAO {
 
     public List<Product> findBySellerId(int sellerId) throws SQLException {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT id, seller_id, name, category, price, quantity, description, image_url, created_at FROM products WHERE seller_id = ? ORDER BY id DESC";
+        String sql = "SELECT p.id, p.seller_id, p.name, p.category, p.price, p.quantity, p.description, p.image_url, p.created_at, " +
+                     "COALESCE(r.avg_rating, 0.0) AS avg_rating, COALESCE(r.rev_count, 0) AS review_count " +
+                     "FROM products p " +
+                     "LEFT JOIN (SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS rev_count FROM reviews GROUP BY product_id) r ON p.id = r.product_id " +
+                     "WHERE p.seller_id = ? ORDER BY p.id DESC";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, sellerId);
@@ -57,22 +69,28 @@ public class ProductDAO {
 
     public List<Product> searchAndFilter(String query, String category) throws SQLException {
         List<Product> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT id, seller_id, name, category, price, quantity, description, image_url, created_at FROM products WHERE 1=1");
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.id, p.seller_id, p.name, p.category, p.price, p.quantity, p.description, p.image_url, p.created_at, " +
+                "COALESCE(r.avg_rating, 0.0) AS avg_rating, COALESCE(r.rev_count, 0) AS review_count " +
+                "FROM products p " +
+                "LEFT JOIN (SELECT product_id, AVG(rating) AS avg_rating, COUNT(*) AS rev_count FROM reviews GROUP BY product_id) r ON p.id = r.product_id " +
+                "WHERE 1=1"
+        );
         List<Object> params = new ArrayList<>();
 
         if (category != null && !category.trim().isEmpty() && !category.equalsIgnoreCase("ALL")) {
-            sql.append(" AND LOWER(category) = LOWER(?)");
+            sql.append(" AND LOWER(p.category) = LOWER(?)");
             params.add(category.trim());
         }
 
         if (query != null && !query.trim().isEmpty()) {
-            sql.append(" AND (LOWER(name) LIKE ? OR LOWER(description) LIKE ?)");
+            sql.append(" AND (LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ?)");
             String wildcard = "%" + query.trim().toLowerCase() + "%";
             params.add(wildcard);
             params.add(wildcard);
         }
 
-        sql.append(" ORDER BY id DESC");
+        sql.append(" ORDER BY p.id DESC");
 
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql.toString())) {
@@ -179,7 +197,7 @@ public class ProductDAO {
     private Product mapRowToProduct(ResultSet rs) throws SQLException {
         int sellerId = rs.getInt("seller_id");
         Integer sellerIdObj = rs.wasNull() ? null : sellerId;
-        return new Product(
+        Product p = new Product(
                 rs.getInt("id"),
                 sellerIdObj,
                 rs.getString("name"),
@@ -190,5 +208,12 @@ public class ProductDAO {
                 rs.getString("image_url"),
                 rs.getTimestamp("created_at")
         );
+        try {
+            p.setAvgRating(Math.round(rs.getDouble("avg_rating") * 10.0) / 10.0);
+            p.setReviewCount(rs.getInt("review_count"));
+        } catch (SQLException ignored) {
+            // If columns not present in query, keep defaults
+        }
+        return p;
     }
 }

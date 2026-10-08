@@ -15,9 +15,10 @@ import java.util.List;
 public class OrderDAO {
 
     public int createOrder(Order order, List<OrderItem> items) throws SQLException {
-        String orderSql = "INSERT INTO orders (buyer_id, total_amount, status, shipping_address, payment_method) VALUES (?, ?, ?, ?, ?)";
-        String itemSql = "INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity, seller_id) VALUES (?, ?, ?, ?, ?, ?)";
+        String orderSql = "INSERT INTO orders (buyer_id, total_amount, status, shipping_address, payment_method, order_date) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        String itemSql = "INSERT INTO order_items (order_id, product_id, product_name, unit_price, price, quantity, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String stockSql = "UPDATE products SET quantity = quantity - ? WHERE id = ? AND quantity >= ?";
+        String clearCartSql = "DELETE FROM cart_items WHERE user_id = ?";
 
         try (Connection con = DBConnection.getConnection()) {
             con.setAutoCommit(false);
@@ -50,11 +51,12 @@ public class OrderDAO {
                         psItem.setInt(2, item.getProductId());
                         psItem.setString(3, item.getProductName());
                         psItem.setDouble(4, item.getUnitPrice());
-                        psItem.setInt(5, item.getQuantity());
+                        psItem.setDouble(5, item.getUnitPrice());
+                        psItem.setInt(6, item.getQuantity());
                         if (item.getSellerId() != null) {
-                            psItem.setInt(6, item.getSellerId());
+                            psItem.setInt(7, item.getSellerId());
                         } else {
-                            psItem.setNull(6, java.sql.Types.INTEGER);
+                            psItem.setNull(7, java.sql.Types.INTEGER);
                         }
                         psItem.addBatch();
 
@@ -64,16 +66,24 @@ public class OrderDAO {
                         psStock.setInt(3, item.getQuantity());
                         int updated = psStock.executeUpdate();
                         if (updated == 0) {
-                            throw new SQLException("Insufficient stock for product ID: " + item.getProductId());
+                            throw new SQLException("Insufficient stock for product: " + item.getProductName());
                         }
                     }
                     psItem.executeBatch();
+                }
+
+                // Clear cart only within this successful transaction
+                try (PreparedStatement psClear = con.prepareStatement(clearCartSql)) {
+                    psClear.setInt(1, order.getBuyerId());
+                    psClear.executeUpdate();
                 }
 
                 con.commit();
                 return orderId;
             } catch (Exception e) {
                 con.rollback();
+                System.err.println("Order transaction rolled back for buyer " + order.getBuyerId() + ": " + e.getMessage());
+                e.printStackTrace();
                 throw new SQLException("Transaction rolled back: " + e.getMessage(), e);
             } finally {
                 con.setAutoCommit(true);
@@ -82,7 +92,7 @@ public class OrderDAO {
     }
 
     public Order findById(int orderId) throws SQLException {
-        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, o.created_at, " +
+        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, COALESCE(o.order_date, o.created_at) AS created_at, " +
                      "u.name AS buyer_name, u.email AS buyer_email " +
                      "FROM orders o " +
                      "LEFT JOIN users u ON o.buyer_id = u.id " +
@@ -103,7 +113,7 @@ public class OrderDAO {
 
     public List<Order> findByBuyerId(int buyerId) throws SQLException {
         List<Order> list = new ArrayList<>();
-        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, o.created_at, " +
+        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, COALESCE(o.order_date, o.created_at) AS created_at, " +
                      "u.name AS buyer_name, u.email AS buyer_email " +
                      "FROM orders o " +
                      "LEFT JOIN users u ON o.buyer_id = u.id " +
@@ -125,7 +135,7 @@ public class OrderDAO {
 
     public List<OrderItem> findIncomingItemsBySellerId(int sellerId) throws SQLException {
         List<OrderItem> list = new ArrayList<>();
-        String sql = "SELECT oi.id, oi.order_id, oi.product_id, oi.product_name, oi.unit_price, oi.quantity, oi.seller_id, oi.created_at " +
+        String sql = "SELECT oi.id, oi.order_id, oi.product_id, oi.product_name, COALESCE(oi.unit_price, oi.price, 0.0) AS unit_price, oi.quantity, oi.seller_id, oi.created_at " +
                      "FROM order_items oi " +
                      "WHERE oi.seller_id = ? " +
                      "ORDER BY oi.id DESC";
@@ -143,7 +153,7 @@ public class OrderDAO {
 
     public List<Order> findAll() throws SQLException {
         List<Order> list = new ArrayList<>();
-        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, o.created_at, " +
+        String sql = "SELECT o.id, o.buyer_id, o.total_amount, o.status, o.shipping_address, o.payment_method, COALESCE(o.order_date, o.created_at) AS created_at, " +
                      "u.name AS buyer_name, u.email AS buyer_email " +
                      "FROM orders o " +
                      "LEFT JOIN users u ON o.buyer_id = u.id " +
@@ -170,9 +180,39 @@ public class OrderDAO {
         }
     }
 
+    public boolean hasBuyerPurchasedProduct(int buyerId, int productId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM orders o JOIN order_items oi ON o.id = oi.order_id WHERE o.buyer_id = ? AND oi.product_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, buyerId);
+            ps.setInt(2, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    public java.util.Set<Integer> getPurchasedProductIds(int buyerId) throws SQLException {
+        java.util.Set<Integer> set = new java.util.HashSet<>();
+        String sql = "SELECT DISTINCT oi.product_id FROM orders o JOIN order_items oi ON o.id = oi.order_id WHERE o.buyer_id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, buyerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    set.add(rs.getInt("product_id"));
+                }
+            }
+        }
+        return set;
+    }
+
     private List<OrderItem> getOrderItems(Connection con, int orderId) throws SQLException {
         List<OrderItem> items = new ArrayList<>();
-        String sql = "SELECT id, order_id, product_id, product_name, unit_price, quantity, seller_id, created_at " +
+        String sql = "SELECT id, order_id, product_id, product_name, COALESCE(unit_price, price, 0.0) AS unit_price, quantity, seller_id, created_at " +
                      "FROM order_items WHERE order_id = ? ORDER BY id ASC";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);

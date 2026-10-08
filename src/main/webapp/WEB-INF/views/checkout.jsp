@@ -107,6 +107,19 @@
         .form-group {
             margin-bottom: 15px;
         }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
         label {
             display: block;
             margin-bottom: 6px;
@@ -213,12 +226,44 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="step-num">1</div>
-                            <div>Shipping Address</div>
+                            <div>Enter Delivery Address</div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Delivery Address</label>
-                            <textarea name="shippingAddress" rows="3" placeholder="Enter street address, building/flat no., city, state and PIN code" required>Plot 42, Anna Nagar West, Chennai, Tamil Nadu - 600040</textarea>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" value="<c:out value='${sessionScope.userName}'/>" placeholder="e.g. Priya Sharma" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="e.g. 9876543210" pattern="[0-9]{10}" title="Please enter a valid 10-digit mobile number" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="houseNo">House / Door Number *</label>
+                                <input type="text" id="houseNo" name="houseNo" placeholder="e.g. Flat 4B, Blossom Apts / Door 24" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="streetArea">Street / Area *</label>
+                                <input type="text" id="streetArea" name="streetArea" placeholder="e.g. 2nd Main Road, Anna Nagar" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">City *</label>
+                                <input type="text" id="city" name="city" placeholder="e.g. Chennai" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State *</label>
+                                <input type="text" id="state" name="state" placeholder="e.g. Tamil Nadu" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pincode">Pincode *</label>
+                                <input type="text" id="pincode" name="pincode" placeholder="e.g. 600040" pattern="[0-9]{6}" title="Please enter a valid 6-digit PIN code" required>
+                            </div>
                         </div>
                     </div>
 
@@ -226,30 +271,30 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="step-num">2</div>
-                            <div>Payment Method (Mock Payment Step)</div>
+                            <div>Select Payment Method (Mock Payment)</div>
                         </div>
 
                         <label class="payment-option">
-                            <input type="radio" name="paymentMethod" value="MOCK_UPI" checked>
-                            <div>
-                                <strong>UPI / QR Code (Mock)</strong>
-                                <div style="font-size: 12px; color: #777;">Google Pay, PhonePe, Paytm, BHIM UPI</div>
-                            </div>
-                        </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="paymentMethod" value="MOCK_CARD">
-                            <div>
-                                <strong>Credit / Debit Card (Mock)</strong>
-                                <div style="font-size: 12px; color: #777;">Visa, MasterCard, RuPay</div>
-                            </div>
-                        </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="paymentMethod" value="MOCK_COD">
+                            <input type="radio" name="paymentMethod" value="Cash on Delivery" checked>
                             <div>
                                 <strong>Cash on Delivery (COD)</strong>
-                                <div style="font-size: 12px; color: #777;">Pay with cash upon receipt</div>
+                                <div style="font-size: 12px; color: #777;">Pay with cash upon delivery</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="Mock UPI">
+                            <div>
+                                <strong>Mock UPI</strong>
+                                <div style="font-size: 12px; color: #777;">Google Pay, PhonePe, Paytm, BHIM</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="paymentMethod" value="Mock Card">
+                            <div>
+                                <strong>Mock Card</strong>
+                                <div style="font-size: 12px; color: #777;">Credit / Debit Card (Simulated payment, no details stored)</div>
                             </div>
                         </label>
                     </div>
@@ -258,14 +303,28 @@
 
                 <!-- Order Summary Sidebar -->
                 <div class="checkout-summary">
-                    <div class="card-header" style="padding-top:0;">Order Review</div>
+                    <div class="card-header" style="padding-top:0;">Order Summary</div>
 
-                    <c:forEach var="item" items="${cartItems}">
-                        <div class="item-row">
-                            <span><c:out value="${item.product.name}"/> × ${item.quantity}</span>
-                            <span>₹<fmt:formatNumber value="${item.subtotal}" pattern="#,##0.00"/></span>
-                        </div>
-                    </c:forEach>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #ede4fb; color: #665b7a; text-align: left;">
+                                <th style="padding: 6px 0;">Product</th>
+                                <th style="padding: 6px 4px; text-align: center;">Qty</th>
+                                <th style="padding: 6px 4px; text-align: right;">Price</th>
+                                <th style="padding: 6px 0; text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="item" items="${cartItems}">
+                                <tr style="border-bottom: 1px solid #f6f0fa;">
+                                    <td style="padding: 8px 0; font-weight: 600; color: #222;"><c:out value="${item.product.name}"/></td>
+                                    <td style="padding: 8px 4px; text-align: center;">${item.quantity}</td>
+                                    <td style="padding: 8px 4px; text-align: right;">₹<fmt:formatNumber value="${item.product.price}" pattern="#,##0.00"/></td>
+                                    <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #6c3fc5;">₹<fmt:formatNumber value="${item.subtotal}" pattern="#,##0.00"/></td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
 
                     <div style="margin-top: 15px; font-size: 14px; color: #666;">
                         <div style="display:flex; justify-content:space-between; margin-bottom: 6px;">
@@ -279,11 +338,11 @@
                     </div>
 
                     <div class="summary-total">
-                        <span>Total to Pay</span>
+                        <span>Total Amount</span>
                         <span>₹<fmt:formatNumber value="${cartTotal}" pattern="#,##0.00"/></span>
                     </div>
 
-                    <button type="submit" class="btn-submit">Confirm & Place Order 🛍️</button>
+                    <button type="submit" class="btn-submit">Place Order 🛍️</button>
                     <a href="${pageContext.request.contextPath}/cart" style="display:block; text-align:center; margin-top:15px; color:#6c3fc5; text-decoration:none; font-size:14px;">← Back to Cart</a>
                 </div>
             </div>

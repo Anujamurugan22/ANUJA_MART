@@ -180,6 +180,25 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        .btn-review {
+            background: #f0eaf7;
+            color: #6c3fc5;
+            border: 1px solid #d4c2ee;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn-review:hover {
+            background: #6c3fc5;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -213,10 +232,20 @@
                 🎉 <strong>Order Placed Successfully!</strong> Thank you for your purchase. Your order #${param.orderId} is confirmed.
             </div>
         </c:if>
+        <c:if test="${param.message eq 'review_success'}">
+            <div class="alert" style="background:#d4edda; color:#155724; border-color:#c3e6cb;">
+                ✓ <strong>Review submitted successfully.</strong> Thank you for rating your purchased product!
+            </div>
+        </c:if>
+        <c:if test="${not empty param.error}">
+            <div class="alert" style="background:#f8d7da; color:#721c24; border-color:#f5c6cb;">
+                <c:out value="${param.error}"/>
+            </div>
+        </c:if>
 
         <c:choose>
-            <!-- Seller View: Incoming Orders -->
             <c:when test="${isSeller}">
+                <%-- Seller View: Incoming Orders --%>
                 <h2 class="page-title">Seller Incoming Orders</h2>
 
                 <c:choose>
@@ -261,8 +290,8 @@
                 </c:choose>
             </c:when>
 
-            <!-- Buyer View: Past Orders History -->
             <c:otherwise>
+                <%-- Buyer View: Past Orders History --%>
                 <h2 class="page-title">My Order History</h2>
 
                 <c:choose>
@@ -304,8 +333,13 @@
                                                 <strong><c:out value="${item.productName}"/></strong>
                                                 <div style="font-size:13px; color:#777;">Quantity: ${item.quantity} × ₹<fmt:formatNumber value="${item.unitPrice}" pattern="#,##0.00"/></div>
                                             </div>
-                                            <div style="font-weight:600; color:#403653;">
-                                                ₹<fmt:formatNumber value="${item.subtotal}" pattern="#,##0.00"/>
+                                            <div style="display:flex; align-items:center; gap:15px;">
+                                                <div style="font-weight:600; color:#403653;">
+                                                    ₹<fmt:formatNumber value="${item.subtotal}" pattern="#,##0.00"/>
+                                                </div>
+                                                <button type="button" class="btn-review" onclick="openOrderReviewModal(${item.productId}, '<c:out value="${item.productName}"/>')">
+                                                    ⭐ Rate & Review
+                                                </button>
                                             </div>
                                         </div>
                                     </c:forEach>
@@ -324,5 +358,58 @@
 
     </div>
 
+    <!-- Review Modal Dialog -->
+    <div id="orderReviewModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:16px; width:90%; max-width:500px; padding:25px; box-shadow:0 10px 30px rgba(0,0,0,0.2); position:relative;">
+            <button onclick="closeOrderReviewModal()" style="position:absolute; right:18px; top:15px; border:none; background:none; font-size:22px; cursor:pointer; color:#777;">✕</button>
+            <h3 id="modalProductName" style="color:#2e1e4a; margin-bottom:15px; font-size:18px;">Rate & Review Product</h3>
+            <form action="${pageContext.request.contextPath}/reviews" method="post">
+                <input type="hidden" name="productId" id="reviewProductId">
+                <input type="hidden" name="source" value="orders">
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; font-size:14px; font-weight:600; color:#403653; margin-bottom:6px;">Rating (1 to 5 Stars) *</label>
+                    <select name="rating" id="reviewRating" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:14px;">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                        <option value="3">⭐⭐⭐ (3 - Good)</option>
+                        <option value="2">⭐⭐ (2 - Fair)</option>
+                        <option value="1">⭐ (1 - Poor)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:14px; font-weight:600; color:#403653; margin-bottom:6px;">Comment *</label>
+                    <textarea name="comment" id="reviewComment" rows="4" required placeholder="Write your review for this purchased product..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:14px; box-sizing:border-box; outline:none;"></textarea>
+                </div>
+
+                <button type="submit" style="width:100%; background:#6c3fc5; color:white; padding:12px; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">Submit Review</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openOrderReviewModal(productId, productName) {
+            document.getElementById('modalProductName').textContent = 'Rate & Review: ' + productName;
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('reviewRating').value = '5';
+            document.getElementById('orderReviewModal').style.display = 'flex';
+
+            fetch('${pageContext.request.contextPath}/reviews?productId=' + productId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.userReview) {
+                        document.getElementById('reviewRating').value = data.userReview.rating;
+                        document.getElementById('reviewComment').value = data.userReview.comment;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function closeOrderReviewModal() {
+            document.getElementById('orderReviewModal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

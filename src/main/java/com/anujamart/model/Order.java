@@ -87,6 +87,14 @@ public class Order {
         this.createdAt = createdAt;
     }
 
+    public Timestamp getOrderDate() {
+        return createdAt;
+    }
+
+    public void setOrderDate(Timestamp orderDate) {
+        this.createdAt = orderDate;
+    }
+
     public String getBuyerName() {
         return buyerName;
     }

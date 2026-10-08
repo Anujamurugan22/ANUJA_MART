@@ -12,6 +12,8 @@ public class Product {
     private String description;
     private String imageUrl;
     private Timestamp createdAt;
+    private double avgRating;
+    private int reviewCount;
 
     public Product() {
     }
@@ -108,5 +110,21 @@ public class Product {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public double getAvgRating() {
+        return avgRating;
+    }
+
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
     }
 }
